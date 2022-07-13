@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 import androidx.fragment.app.Fragment;
 
-public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuthenticationResultListener, MapView.MapViewEventListener  {
+public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuthenticationResultListener, MapView.MapViewEventListener, MapView.CurrentLocationEventListener {
     private MapView mMapView;
     private MapPOIItem mDefaultMarker;
     private Bitmap markerImage = null;
@@ -44,6 +44,8 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
         mMapView.setMapViewEventListener(this);
         mMapView.setMapType(MapView.MapType.Standard);
 
+        mMapView.setCurrentLocationEventListener(this);
+        mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
 
         Double lat = getArguments().getDouble(Constants.PARAM_LAT);
         Double lng = getArguments().getDouble(Constants.PARAM_LNG);
@@ -84,6 +86,8 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOff);
+        mMapView.setShowCurrentLocationMarker(false);
     }
 
     @Override
@@ -152,6 +156,33 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
     public void onMapViewZoomLevelChanged(MapView mapView, int zoomLevel) {
         Log.i(Constants.LOG_TAG, String.format("MapView onMapViewZoomLevelChanged (%d)", zoomLevel));
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    // MapView.CurrentLocationEventListener
+
+    @Override
+    public void onCurrentLocationUpdate(MapView mapView, MapPoint currentLocation, float accuracyInMeters) {
+        MapPoint.GeoCoordinate mapPointGeo = currentLocation.getMapPointGeoCoord();
+        Log.i(Constants.LOG_TAG, String.format("MapView onCurrentLocationUpdate (%f,%f) accuracy (%f)", mapPointGeo.latitude, mapPointGeo.longitude, accuracyInMeters));
+    }
+
+    @Override
+    public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v) {
+
+    }
+
+    @Override
+    public void onCurrentLocationUpdateFailed(MapView mapView) {
+
+    }
+
+    @Override
+    public void onCurrentLocationUpdateCancelled(MapView mapView) {
+
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    // @jiggag/react-native-kakao-maps
 
     private void getBitmapFromUrl(String imageUrl) {
         if (imageUrl == null) {
